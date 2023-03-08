@@ -4,7 +4,7 @@
         <f:entry field="webhookurl" title="${%webhookurl when notify}">
             <f:textbox/>
         </f:entry>
-        <f:entry field="mention" title="${%mentioned list or mobile list}">
+        <f:entry field="mention" title="${%mentioned list}">
             <f:textarea/>
         </f:entry>
     </f:optionalBlock>
