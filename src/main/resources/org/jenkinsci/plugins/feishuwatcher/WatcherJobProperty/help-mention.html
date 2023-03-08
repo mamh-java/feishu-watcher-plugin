@@ -1,5 +1,11 @@
 <div>
-    mentioned_list    userid的列表，提醒群中的指定成员(@某个成员)，@all表示提醒所有人，如果开发者获取不到userid，可以使用mentioned_mobile_list
-    mentioned_mobile_list    手机号列表，提醒手机号对应的群成员(@某个成员)，@all表示提醒所有人
-
+    <p>如何实现@指定人、@所有人</p>
+    <p>可以在机器人发送的普通文本消息（text）、富文本消息（post）、消息卡片（interactive）中，
+        使用at标签实现@人效果。具体请求示意如下：</p>
+    <xmp>
+    // at 指定用户
+    <at user_id="ou_xxx">Name</at> //取值必须使用ou_xxxxx格式的 open_id 来at指定人
+    // at 所有人
+    <at user_id="all">所有人</at>
+    </xmp>
 </div>
