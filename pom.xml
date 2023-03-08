@@ -1,0 +1,59 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.jenkins-ci.plugins</groupId>
+        <artifactId>plugin</artifactId>
+        <version>4.31</version>
+    </parent>
+
+    <groupId>org.jenkins-ci.plugins</groupId>
+    <artifactId>feishu-watcher-plugin</artifactId>
+    <version>1.20-SNAPSHOT</version>
+    <packaging>hpi</packaging>
+    <name>Feishu Watcher Plugin</name>
+    <description>This plugin notifies configured feishu recipients on various events.</description>
+    <url>https://github.com/mamh-java/feishu-watcher-plugin</url>
+
+    <scm>
+        <connection>scm:git:https://github.com/mamh-java/feishu-watcher-plugin.git</connection>
+        <developerConnection>scm:git:https://github.com/mamh-java/feishu-watcher-plugin.git</developerConnection>
+        <url>https://github.com/mamh-java/feishu-watcher-plugin</url>
+        <tag>HEAD</tag>
+    </scm>
+
+    <repositories>
+        <repository>
+            <id>repo.jenkins-ci.org</id>
+            <url>https://repo.jenkins-ci.org/public/</url>
+        </repository>
+    </repositories>
+
+    <pluginRepositories>
+        <pluginRepository>
+            <id>repo.jenkins-ci.org</id>
+            <url>https://repo.jenkins-ci.org/public/</url>
+        </pluginRepository>
+    </pluginRepositories>
+
+    <properties>
+        <jenkins.version>2.303.1</jenkins.version>
+        <java.level>8</java.level>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.jenkins-ci.plugins</groupId>
+            <artifactId>qy-wechat-notification</artifactId>
+            <version>1.1.1</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jenkins-ci.plugins</groupId>
+            <artifactId>jobConfigHistory</artifactId>
+            <version>2.26</version>
+            <optional>true</optional>
+        </dependency>
+
+    </dependencies>
+</project>
