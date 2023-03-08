@@ -111,6 +111,13 @@ public class FeishuWatcher {
         content.append("\n");
         content.append("\n");
         content.append(notification.getMailBody());
+        for (String mentioned : mentionedList) {
+            if (mentioned.equals("@all")) {
+                content.append("<at user_id=\"all\">所有人</at>\n");
+            } else {
+                content.append("<at user_id=\"" + mentioned + "\">" + mentioned + "</at>\n");
+            }
+        }
 
         Map text = new HashMap<String, Object>();
         text.put("text", content.toString());
@@ -128,12 +135,12 @@ public class FeishuWatcher {
         return req;
     }
 
-    private List<String> getMentionedList(String mention) { // # 用户 userID 列表
+    private List<String> getMentionedList(String mention) { // # 用户 open_id  列表
         List<String> list = new ArrayList<>();
         if (StringUtils.isNotEmpty(mention)) {
-            Iterable<String> iterable = Splitter.on(',').omitEmptyStrings().split(mention);
+            Iterable<String> iterable = Splitter.on(',').omitEmptyStrings().trimResults().split(mention);
             for (String result : iterable) {
-                if (mention.startsWith("qy") || mention.equals("@all")) {
+                if (result.startsWith("ou") || result.equals("@all")) {
                     list.add(result);
                 }
             }
@@ -144,9 +151,9 @@ public class FeishuWatcher {
     private List<String> getMobileList(String mention) { // # 用户 mobile 列表
         List<String> list = new ArrayList<>();
         if (StringUtils.isNotEmpty(mention)) {
-            Iterable<String> iterable = Splitter.on(',').omitEmptyStrings().split(mention);
+            Iterable<String> iterable = Splitter.on(',').omitEmptyStrings().trimResults().split(mention);
             for (String result : iterable) {
-                if (!mention.startsWith("qy") && !mention.equals("@all")) {
+                if (!result.startsWith("ou") && !result.equals("@all")) {
                     list.add(result);
                 }
             }
