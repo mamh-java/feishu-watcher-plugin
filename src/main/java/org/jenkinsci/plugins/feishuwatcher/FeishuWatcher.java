@@ -107,21 +107,23 @@ public class FeishuWatcher {
         List<String> mobileList = getMobileList(mention);
 
         StringBuilder content = new StringBuilder();
-        content.append("<font color=\"info\">" + notification.getMailSubject() + "</font>\n");
+        content.append(notification.getMailSubject());
+        content.append("\n");
+        content.append("\n");
         content.append(notification.getMailBody());
 
-        Map mdMap = new HashMap<String, Object>();
-        mdMap.put("content", content.toString());
-
-        if(!CollectionUtils.isEmpty(mentionedList))
-            mdMap.put("mentioned_list", mentionedList);
-        if(!CollectionUtils.isEmpty(mobileList))
-            mdMap.put("mentioned_mobile_list", mobileList);
+        Map text = new HashMap<String, Object>();
+        text.put("text", content.toString());
 
         Map data = new HashMap<String, Object>();
-        data.put("msgtype", "markdown");
-        data.put("markdown", mdMap);
-
+        data.put("msg_type", "text");
+        data.put("content", text);
+        //        {
+        //            "msg_type": "text",
+        //                "content": {
+        //                    "text": "新更新提醒"
+        //                }
+        //        }
         String req = JSONObject.fromObject(data).toString();
         return req;
     }
