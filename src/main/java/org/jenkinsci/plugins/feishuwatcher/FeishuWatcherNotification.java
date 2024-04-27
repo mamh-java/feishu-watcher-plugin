@@ -67,7 +67,7 @@ public abstract class FeishuWatcherNotification {
         return resourceName;
     }
 
-    private String getArtefactUrl() {
+    public String getArtefactUrl() {
         return jenkinsRootUrl + this.getUrl();
     }
 
