@@ -91,6 +91,7 @@ public class WatcherItemListener extends ItemListener {
                 }
                 this.recipients(property.getMention());
                 this.webhookurl(property.getWebhookurl());
+                this.isPost(property.isPost());
 
                 Stack<String> stack = new Stack<String>();
                 stack.push(job.getShortUrl());
