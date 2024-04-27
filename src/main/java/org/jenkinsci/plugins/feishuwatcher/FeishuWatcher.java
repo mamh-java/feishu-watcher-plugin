@@ -209,6 +209,7 @@ public class FeishuWatcher {
         String body = notification.getBody();
         if(StringUtils.isNotEmpty(body)){
             list.add(new MessageItem("text", "说明: \n" + body+ "\n", null, null));
+            list.add(new MessageItem("text", "\n", null, null));
         }
         list.add(new MessageItem("text", "发现时间: " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")) + "\n", null, null));
         list.add(new MessageItem("text", "发起者是: " + notification.getInitiator().getId() + "\n", null, null));
