@@ -6,4 +6,7 @@
     <f:entry field="mention" title="${%mentioned list }">
         <f:textarea/>
     </f:entry>
+    <f:entry field="post" title="${%text or post message }">
+        <f:checkbox/>
+    </f:entry>
 </j:jelly>
