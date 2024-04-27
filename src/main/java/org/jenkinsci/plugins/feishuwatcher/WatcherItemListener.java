@@ -72,18 +72,6 @@ public class WatcherItemListener extends ItemListener {
             return String.format("Job %s %s", getName(), super.getSubject());
         }
 
-        @Override
-        protected @Nonnull
-        Map<String, String> pairs() {
-            final Map<String, String> pairs = super.pairs();
-            final String historyUrl = feishu.configHistory().lastChangeDiffUrl(job);
-            if (historyUrl != null) {
-                String url = feishu.absoluteUrl(historyUrl).toString();
-                pairs.put("Change", "[show Diff ](" + url + ")");
-            }
-            return pairs;
-        }
-
         private static class Builder extends FeishuWatcherNotification.Builder {
 
             private Job<?, ?> job;
