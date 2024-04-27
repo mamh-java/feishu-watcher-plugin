@@ -3,6 +3,9 @@ package org.jenkinsci.plugins.feishuwatcher;
 import com.arronlong.httpclientutil.HttpClientUtil;
 import com.arronlong.httpclientutil.common.HttpConfig;
 import com.arronlong.httpclientutil.exception.HttpProcessException;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import hudson.Plugin;
 import hudson.model.User;
 import hudson.plugins.jobConfigHistory.JobConfigHistory;
@@ -17,7 +20,6 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.ssl.SSLContexts;
 import org.jenkinsci.plugins.feishuwatcher.jobConfigHistory.ConfigHistory;
 import com.google.common.base.Splitter;
-import org.springframework.util.CollectionUtils;
 
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
@@ -28,6 +30,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.logging.Logger;
 
@@ -85,7 +89,10 @@ public class FeishuWatcher {
             return null;
         }
 
-        String data = toJSONString(notification);
+        String data = forPost(notification);
+        if (StringUtils.isEmpty(data)) {
+            data = forText(notification);
+        }
 
         LOGGER.info("will send msg: " + data);
         for (String u : urls) {
@@ -100,17 +107,37 @@ public class FeishuWatcher {
         return "";
     }
 
-    private String toJSONString(final FeishuWatcherNotification notification) {
+    /**
+     * 发送文本消息
+     * https://open.feishu.cn/document/client-docs/bot-v3/add-custom-bot#756b882f
+     * {
+     *     "msg_type": "text",
+     *     "content": {
+     *         "text": "<at user_id=\"ou_xxx\">Tom</at> 新更新提醒"
+     *     }
+     * }
+     * @param notification
+     * @return
+     */
+    private String forText(final FeishuWatcherNotification notification) {
         //组装内容
         String mention = notification.getRecipients();
         List<String> mentionedList = getMentionedList(mention);
-        List<String> mobileList = getMobileList(mention);
-
         StringBuilder content = new StringBuilder();
         content.append(notification.getMailSubject());
         content.append("\n");
         content.append("\n");
-        content.append(notification.getMailBody());
+
+        content.append("发现时间: ");
+        content.append(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+        content.append("\n");
+
+        content.append("发起者是: ");
+        content.append(notification.getInitiator().getId());
+        content.append("\n");
+        content.append("链接: ");
+        content.append(notification.getArtefactUrl());
+        content.append("\n");
         for (String mentioned : mentionedList) {
             if (mentioned.equals("@all")) {
                 content.append("<at user_id=\"all\">所有人</at>\n");
@@ -118,20 +145,89 @@ public class FeishuWatcher {
                 content.append("<at user_id=\"" + mentioned + "\">" + mentioned + "</at>\n");
             }
         }
+        MessageTextContent mtc = new MessageTextContent(content.toString());
+        MessageText message = new MessageText("text", mtc);
 
-        Map text = new HashMap<String, Object>();
-        text.put("text", content.toString());
+        ObjectMapper mapper = new ObjectMapper();
+        String req = "";
+        try {
+            req = mapper.writeValueAsString(message);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        return req;
+    }
 
-        Map data = new HashMap<String, Object>();
-        data.put("msg_type", "text");
-        data.put("content", text);
-        //        {
-        //            "msg_type": "text",
-        //                "content": {
-        //                    "text": "新更新提醒"
-        //                }
-        //        }
-        String req = JSONObject.fromObject(data).toString();
+    /**
+     * 发送富文本消息
+     * https://open.feishu.cn/document/client-docs/bot-v3/add-custom-bot#f62e72d5
+     * {
+     *     "msg_type": "post",
+     *     "content": {
+     *         "post": {
+     *             "zh_cn": {
+     *                 "title": "项目更新通知",
+     *                 "content": [
+     *                     [
+     *                         {
+     *                             "tag": "text",
+     *                             "text": "项目有更新: "
+     *                         },
+     *                         {
+     *                             "tag": "a",
+     *                             "text": "请查看",
+     *                             "href": "http://www.example.com/"
+     *                         },
+     *                         {
+     *                             "tag": "at",
+     *                             "user_id": "ou_18eac8********17ad4f02e8bbbb"
+     *                         }
+     *                     ]
+     *                 ]
+     *             }
+     *         }
+     *     }
+     * }
+     * @param notification
+     * @return
+     */
+    private String forPost(final FeishuWatcherNotification notification) {
+        //组装内容
+        String mention = notification.getRecipients();
+        List<String> mentionedList = getMentionedList(mention);
+        List<String> mobileList = getMobileList(mention);
+
+        String subject = notification.getMailSubject();
+
+        List<MessageItem> list = new ArrayList<>();
+        list.add(new MessageItem("text", "\n", null, null));
+        list.add(new MessageItem("text", "发现时间: " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")) + "\n", null, null));
+        list.add(new MessageItem("text", "发起者是: " + notification.getInitiator().getId() + "\n", null, null));
+        list.add(new MessageItem("text", "链接:  ", null, null));
+        list.add(new MessageItem("a", "请点这里", notification.getArtefactUrl(), null));
+        list.add(new MessageItem("text", "\n", null, null));
+        for (String s : mentionedList) {
+            list.add(new MessageItem("at", null, null, s));
+        }
+        for (String s : mobileList) {
+            list.add(new MessageItem("at", null, null, s));
+        }
+        List<List<MessageItem>> conttentList = new ArrayList<>();
+        conttentList.add(list);
+
+        MessageZhCn zhcn = new MessageZhCn(subject, conttentList);
+        MessagePost post = new MessagePost(zhcn);
+        MessageContent content = new MessageContent(post);
+        Message message = new Message("post", content);
+
+        ObjectMapper mapper = new ObjectMapper();
+
+        String req = "";
+        try {
+            req = mapper.writeValueAsString(message);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
         return req;
     }
 
@@ -182,6 +278,87 @@ public class FeishuWatcher {
 
         String result = HttpClientUtil.post(httpConfig);
         return result;
+    }
+
+    private static class MessageText {
+        @JsonProperty("msg_type")
+        public String msgType;
+        @JsonProperty("content")
+        public MessageTextContent content;
+
+        public MessageText(String msgType, MessageTextContent content) {
+            this.msgType = msgType;
+            this.content = content;
+        }
+    }
+
+    private static class MessageTextContent {
+        @JsonProperty("text")
+        public String text;
+
+        public MessageTextContent(String text) {
+            this.text = text;
+        }
+    }
+
+    private static class Message {
+        @JsonProperty("msg_type")
+        public String msgType;
+        @JsonProperty("content")
+        public MessageContent content;
+
+        public Message(String msgType, MessageContent content) {
+            this.msgType = msgType;
+            this.content = content;
+        }
+    }
+
+    private static class MessageContent {
+        @JsonProperty("post")
+        public MessagePost post;
+
+        public MessageContent(MessagePost post) {
+            this.post = post;
+        }
+    }
+
+    private static class MessagePost {
+        @JsonProperty("zh_cn")
+        public MessageZhCn zhcn;
+
+        public MessagePost(MessageZhCn zhcn) {
+            this.zhcn = zhcn;
+        }
+    }
+
+    private static class MessageZhCn {
+        @JsonProperty("title")
+        public String title;
+        @JsonProperty("content")
+        public List<List<MessageItem>> content;
+
+        public MessageZhCn(String title, List<List<MessageItem>> content) {
+            this.title = title;
+            this.content = content;
+        }
+    }
+
+    private static class MessageItem {
+        @JsonProperty("tag")
+        public String tag;
+        @JsonProperty("text")
+        public String text;
+        @JsonProperty("href")
+        public String href;
+        @JsonProperty("user_id")
+        public String userId;
+
+        public MessageItem(String tag, String text, String href, String userId) {
+            this.tag = tag;
+            this.text = text;
+            this.href = href;
+            this.userId = userId;
+        }
     }
 
 }
