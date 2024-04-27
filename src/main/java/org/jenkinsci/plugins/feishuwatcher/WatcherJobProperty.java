@@ -6,6 +6,7 @@ import hudson.model.JobProperty;
 import hudson.model.JobPropertyDescriptor;
 import hudson.util.FormValidation;
 import net.sf.json.JSONObject;
+import org.apache.commons.lang.StringUtils;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
@@ -18,11 +19,13 @@ public class WatcherJobProperty extends JobProperty<Job<?, ?>> {
 
     private final String webhookurl;
     private final String mention;
+    private final boolean post;
 
     @DataBoundConstructor
-    public WatcherJobProperty(final String webhookurl, final String mention) {
+    public WatcherJobProperty(final String webhookurl, final String mention, final boolean post) {
         this.webhookurl = webhookurl;
         this.mention = mention;
+        this.post = post;
     }
 
     public String getWebhookurl() {
@@ -31,6 +34,10 @@ public class WatcherJobProperty extends JobProperty<Job<?, ?>> {
 
     public String getMention() {
         return mention;
+    }
+
+    public boolean isPost() {
+        return post;
     }
 
     @Extension
@@ -49,20 +56,28 @@ public class WatcherJobProperty extends JobProperty<Job<?, ?>> {
 
             final String addresses = watcherData.getString("webhookurl");
             final String mention = watcherData.getString("mention");
+            final boolean post = watcherData.getBoolean("post");
 
             if (addresses == null || addresses.isEmpty())
                 return null;
 
-            return new WatcherJobProperty(addresses, mention);
+            return new WatcherJobProperty(addresses, mention, post);
         }
 
         public FormValidation doCheckWebhookurl(@QueryParameter String value) {
-            LOGGER.info("doCheckWebhookurl: " + value);
+            if (StringUtils.isEmpty(value)) {
+                return FormValidation.error("webhook url is empty");
+            }
+            if (!value.startsWith("http")) {
+                return FormValidation.error("webhook url not http/https");
+            }
+            if (!value.contains("/open-apis/bot/v2/hook")) {
+                return FormValidation.error("webhook api should be open-apis/bot/v2/hook");
+            }
             return FormValidation.ok();
         }
 
         public FormValidation doCheckMention(@QueryParameter String value) {
-            LOGGER.info("doCheckMention: " + value);
             return FormValidation.ok();
         }
 
