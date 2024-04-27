@@ -89,12 +89,14 @@ public class FeishuWatcher {
             return null;
         }
 
-        String data = forPost(notification);
-        if (StringUtils.isEmpty(data)) {
+        String data = "";
+        if(notification.isPost()){
+             data = forPost(notification);
+        }else{
             data = forText(notification);
         }
-
         LOGGER.info("will send msg: " + data);
+
         for (String u : urls) {
             try {
                 String msg = push(u, data);
@@ -208,7 +210,6 @@ public class FeishuWatcher {
         if(StringUtils.isNotEmpty(body)){
             list.add(new MessageItem("text", "说明: \n" + body+ "\n", null, null));
         }
-        list.add(new MessageItem("text", "\n", null, null));
         list.add(new MessageItem("text", "发现时间: " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")) + "\n", null, null));
         list.add(new MessageItem("text", "发起者是: " + notification.getInitiator().getId() + "\n", null, null));
         list.add(new MessageItem("text", "链接:  ", null, null));
