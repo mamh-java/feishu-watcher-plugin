@@ -111,6 +111,7 @@ public class WatcherComputerListener extends ComputerListener {
                     this.recipients(property.getMention());
                 }
                 this.webhookurl(property.getWebhookurl());
+                this.isPost(property.isPost());
 
                 this.url(computer.getUrl());
                 this.name(computer.getDisplayName());
