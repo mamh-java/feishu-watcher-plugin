@@ -127,7 +127,10 @@ public class FeishuWatcher {
         content.append(notification.getMailSubject());
         content.append("\n");
         content.append("\n");
-
+        String body = notification.getBody();
+        if(StringUtils.isNotEmpty(body)){
+            content.append("说明: \n" + body+ "\n\n");
+        }
         content.append("发现时间: ");
         content.append(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
         content.append("\n");
@@ -201,6 +204,11 @@ public class FeishuWatcher {
 
         List<MessageItem> list = new ArrayList<>();
         list.add(new MessageItem("text", "\n", null, null));
+        String body = notification.getBody();
+        if(StringUtils.isNotEmpty(body)){
+            list.add(new MessageItem("text", "说明: \n" + body+ "\n", null, null));
+        }
+        list.add(new MessageItem("text", "\n", null, null));
         list.add(new MessageItem("text", "发现时间: " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")) + "\n", null, null));
         list.add(new MessageItem("text", "发起者是: " + notification.getInitiator().getId() + "\n", null, null));
         list.add(new MessageItem("text", "链接:  ", null, null));
@@ -236,7 +244,7 @@ public class FeishuWatcher {
         if (StringUtils.isNotEmpty(mention)) {
             Iterable<String> iterable = Splitter.on(',').omitEmptyStrings().trimResults().split(mention);
             for (String result : iterable) {
-                if (result.startsWith("ou") || result.equals("@all")) {
+                if (result.startsWith("ou") || result.contains("all")) {
                     list.add(result);
                 }
             }
@@ -249,7 +257,7 @@ public class FeishuWatcher {
         if (StringUtils.isNotEmpty(mention)) {
             Iterable<String> iterable = Splitter.on(',').omitEmptyStrings().trimResults().split(mention);
             for (String result : iterable) {
-                if (!result.startsWith("ou") && !result.equals("@all")) {
+                if (!result.startsWith("ou") && !result.contains("all")) {
                     list.add(result);
                 }
             }
