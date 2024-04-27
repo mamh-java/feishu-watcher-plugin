@@ -83,28 +83,6 @@ public abstract class FeishuWatcherNotification {
         return WATCHER_PLUGIN + this.getSubject();
     }
 
-    public final String getMailBody() {
-        final StringBuilder body = new StringBuilder();
-        for (final Map.Entry<String, String> pair : pairs().entrySet()) {
-            body.append(pair(pair.getKey(), pair.getValue()));
-        }
-
-        return body.append("\n\n").append(this.getBody()).toString();
-    }
-
-    protected @Nonnull
-    Map<String, String> pairs() {
-        final Map<String, String> pairs = new HashMap<>(3);
-        pairs.put("发现时间", LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
-        pairs.put("发起者是", this.getInitiator().getId());
-        pairs.put("Url", "[" + this.getArtefactUrl() + "](" + this.getArtefactUrl() + ")");
-        return pairs;
-    }
-
-    private String pair(final String key, final String value) {
-        return String.format("%s: %s%n", key, value);
-    }
-
     public final void send() {
         try {
             final String msg = feishu.send(this);
