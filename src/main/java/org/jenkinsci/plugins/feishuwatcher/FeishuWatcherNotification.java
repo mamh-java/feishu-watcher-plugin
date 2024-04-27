@@ -26,6 +26,7 @@ public abstract class FeishuWatcherNotification {
     final private String webhookurl;
     final private String resourceName;
     final private User initiator;
+    final private boolean post;
 
     final private String jenkinsRootUrl;
 
@@ -41,6 +42,7 @@ public abstract class FeishuWatcherNotification {
         this.initiator = builder.initiator;
         this.jenkinsRootUrl = builder.jenkinsRootUrl;
         this.feishu = builder.feishu;
+        this.post = builder.post;
     }
 
     protected String getSubject() {
@@ -57,6 +59,10 @@ public abstract class FeishuWatcherNotification {
 
     public String getWebhookurl() {
         return webhookurl;
+    }
+
+    public boolean isPost() {
+        return post;
     }
 
     public String getUrl() {
@@ -109,6 +115,7 @@ public abstract class FeishuWatcherNotification {
         private String webhookurl = "";
         private String resourceName = "";
         private User initiator;
+        private boolean post;
 
         public Builder(final FeishuWatcher feishu, final String jenkinsRootUrl) {
             this.feishu = feishu;
@@ -140,7 +147,10 @@ public abstract class FeishuWatcherNotification {
             this.webhookurl = webhookurl;
             return this;
         }
-
+        protected Builder isPost(final boolean post) {
+            this.post = post;
+            return this;
+        }
         protected Builder name(final String name) {
             this.resourceName = name;
             return this;
